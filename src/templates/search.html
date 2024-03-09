@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script>
+    const searchForUser = () => {
+        const searchInputValue = document.getElementById("user_search").value;
+        window.location.href = `/pages/search/${searchInputValue}`;
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="flex justify-center flex-col items-center">
+    <div class="flex my-3 gap-5">
+        <input id="user_search" type="text" placeholder="Поиск" class="text-xl">
+        <button onclick="searchForUser()" class="border-2 rounded-3xl bg-gray-300 p-3">Поиск по юзерам</button>
+    </div>
+    {% for user in users %}
+        <div class="flex rounded-3 border-2 p-3 mt-5">
+            <img width="150" src="{{ url_for('static', path='avatar.jpg') }}" alt="Аватар" class="mr-5">
+            <div class="flex flex-col">
+                <span class="text-2xl font-bold">{{ user.name }}</span>
+                <span class="text-lg">{{ user.surname }}</span>
+                <span class="text-lg">{{ user.email }}</span>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
