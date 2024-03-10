@@ -1,4 +1,5 @@
 import time
+from typing import List
 
 from fastapi import APIRouter, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse
@@ -7,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.manager import get_user_manager
 
 from fastapi_users import schemas
-from src.auth.models import user
+from src.auth.models import user, User
 from src.auth.base_config import current_user
 from src.database import get_async_session
 
@@ -16,20 +17,16 @@ router = APIRouter(
     tags=["users"]
 )
 
-@router.get("")
+@router.get("/get-all")
 async def get_users(
         data: str,
         session: AsyncSession = Depends(get_async_session),
 ):
     try:
-        query = select(user).where((user.c.name.like("%" + data + "%"))|
+        query = select(user.c.name, user.c.surname, user.c.email).where((user.c.name.like("%" + data + "%"))|
                                    user.c.surname.like("%" + data + "%"))
         result = await session.execute(query)
-        return {
-            "status": "success",
-            "data": result.all(),
-            "details": None
-        }
+        return result.mappings().all()
     except Exception:
         raise HTTPException(status_code=500, detail={
             "status": "error",

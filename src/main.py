@@ -4,7 +4,7 @@ from src.auth.base_config import auth_backend, fastapi_users
 
 from src.pages.router import router as router_pages
 from src.auth.schemas import UserRead, UserCreate
-
+from src.user.router import router as router_user
 app = FastAPI(
     title="App"
 )
@@ -25,3 +25,4 @@ app.include_router(
 )
 
 app.include_router(router_pages)
+app.include_router(router_user)
