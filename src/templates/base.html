@@ -7,16 +7,19 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script src="https://cdn.tailwindcss.com"></script>
     {% block head %}{% endblock %}
-    <title>Appл</title>
+    <title>App</title>
 </head>
-<body>
+<body align="center"    >
     <nav class="flex justify-between text-3xl my-3">
         <ul class="flex ml-10">
-            <li>Чатик</li>
+            <li><a href="{{ url_for('home') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Чатик</button></a></li>
+        </ul>
+        <ul class="flex ml-10">
+            <li><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Поиск</button></a></li>
         </ul>
         <ul class="flex gap-5 mr-10">
-            <li>Мой аккаунт</li>
-            <li>Выйти</li>
+            <li><a href="{{ url_for('register') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Мой аккаунт</button></a></li>
+            <li><button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Выйти</button></a></li>
         </ul>
     </nav>
     <hr>

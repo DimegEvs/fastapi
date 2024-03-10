@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex justify-center items-center h-screen">
+    <div class="p-8 rounded shadow-md max-w-md w-full">
+        <h2 class="text-2xl mb-4 text-center">Регистрация</h2>
+        <form id="loginForm" action="/auth/login" method="post"> 
+            <div class="mb-4">
+            <div class="mb-4">
+                <label for="email" class="block text-sm font-medium text-gray-700">Email:</label>
+                <input type="email" id="email" name="email" required class="mt-1 p-2 border border-gray-300 rounded-md w-full">
+            </div>
+            <div class="mb-4">
+                <label for="password" class="block text-sm font-medium text-gray-700">Пароль:</label>
+                <input type="password" id="password" name="password" required class="mt-1 p-2 border border-gray-300 rounded-md w-full">
+            </div>
+            <div class="text-center">
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">Register</button>
+            </div>
+            <div class="mt-4 text-center">
+                <a href="/register" class="text-blue-500 hover:underline">Нет аккаунта? Регистрация</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const form = document.querySelector('#registrationForm');
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const formData = {
+            email: form.querySelector('#email').value,
+            password: form.querySelector('#password').value
+        };
+
+        try {
+            const response = await fetch('/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Login failed.');
+            }
+
+            // Обработка успешного ответа
+        } catch (error) {
+            console.error('Error during registration:', error.message);
+            // Обработка ошибки
+
+            // Если сервер вернул JSON с деталями ошибки
+            if (error.response) {
+
+            } else {
+                alert('Произошла ошибка при авторизации.');
+            }
+        }
+    });
+</script>
+{% endblock %}

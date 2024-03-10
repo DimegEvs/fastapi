@@ -1,9 +1,12 @@
 import time
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Form, HTTPException
+from fastapi.responses import HTMLResponse
 from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.auth.manager import get_user_manager
 
+from fastapi_users import schemas
 from src.auth.models import user
 from src.auth.base_config import current_user
 from src.database import get_async_session
@@ -33,3 +36,4 @@ async def get_users(
             "data": None,
             "details": None
         })
+        

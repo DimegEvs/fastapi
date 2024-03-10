@@ -1,20 +1,31 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Form, Request, Depends
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-
+from src.auth.manager import get_user_manager
+from fastapi_users import schemas
 from src.auth.router import get_users
 
 router = APIRouter(
-    prefix="/pages",
+    prefix="",
     tags=["Pages"]
 )
 
 templates = Jinja2Templates(directory="src/templates")
 
-@router.get("/base")
+@router.get("/", name="home")
 def get_base_page(request: Request):
-    return templates.TemplateResponse("base.html", {"request": request})
+    register_url = request.url_for("register")
+    home_url = request.url_for("home")
+    return templates.TemplateResponse("base.html", {"request": request, "home_url": home_url, "register_url": register_url})
 
-@router.get("/search/{data}")
+@router.get("/search/{users}", name="search")
 def get_search_page(request: Request, users=Depends(get_users)):
-    print(users["data"])
     return templates.TemplateResponse("search.html", {"request": request, "users": users["data"]})
+
+@router.get("/register", name="register")
+def get_register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
+@router.get("/login", name="login")
+def get_login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
