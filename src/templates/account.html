@@ -41,9 +41,7 @@
                     unsubscribeButton.addEventListener("click", () => {
                         try {
                             const response = fetch(`sub/unsub/${userId}/${friend.id}`)
-                            console.log(response)
-                            loadFriendsList(userId);
-                            console.log("Вы отписались от пользователя с id:", friend.id);
+                            location.reload()
                         } catch {
                             console.log("Проблема с отпиской от пользователя с id:", friend.id);
                         }

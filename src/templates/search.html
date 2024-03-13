@@ -15,20 +15,32 @@
     <script>
         const userId = document.getElementById('userId').getAttribute('data-variable');
         const createUserElement = (user) => {
+            // const check_sub = checkSubscription(user.id)
+            console.log(user)
             const userElement = document.createElement("div");
             userElement.classList.add("flex", "rounded-3", "border-2", "p-3", "mt-5");
             userElement.style.margin = "10px"
-            userElement.innerHTML = `
-                <div class=" justify-center items-center">
+            div = document.createElement('div')
+            div.classList.add("justify-center", "items-center")
+            div.innerHTML = `
                     <img width="150" src="{{ url_for('static', path='avatar.jpg') }}" alt="Аватар" class="mr-5">
                     <div class="flex flex-col items-start">
                         <span class="text-2xl font-bold">${user.id} ${user.name}</span>
                         <span class="text-lg">${user.surname}</span>
                         <span class="text-lg">${user.email}</span>
-                    </div>
-                    <button class="ml-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded self-end" onclick="subscribeToUser(${user.id})">Подписаться</button>
-                </div>
-            `;
+                    </div>`
+            button = document.createElement('button')
+            button.classList.add('ml-auto', 'bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded', 'self-end')
+            if (!user.is_subscribed) {
+                button.onclick = (event) => {
+                    subscribeToUser(user.id)
+                }
+                button.textContent = "Подписаться ✅"
+            } else {
+                button.textContent = "В подписках"
+            }
+            div.appendChild(button)
+            userElement.appendChild(div)
             return userElement;
         };
         
@@ -36,6 +48,7 @@
             try {
                 await fetch(`/sub/add_sub/${userId}/${currentUserId}`, { method: 'POST' });
                 alert('Вы успешно подписались на пользователя!');
+                searchForUser()
             } catch (error) {
                 console.error('Ошибка:', error);
                 alert('Произошла ошибка при подписке на пользователя.');
@@ -95,3 +108,5 @@
     </script>
 </div>
 {% endblock %}
+
+
