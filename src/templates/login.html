@@ -24,12 +24,12 @@
 </div>
 
 <script>
-    const form = document.querySelector('#registrationForm');
+    const form = document.querySelector('#registorForm');
     form.addEventListener('submit', async (event) => {
-        event.preventDefault();
+        //event.preventDefault();
 
         const formData = {
-            email: form.querySelector('#username').value,
+            username: form.querySelector('#username').value,
             password: form.querySelector('#password').value
         };
 
@@ -45,7 +45,9 @@
             if (!response.ok) {
                 throw new Error('Login failed.');
             }
-
+            else{
+                window.location.href = "/";
+            }
             // Обработка успешного ответа
         } catch (error) {
             console.error('Error during registration:', error.message);

@@ -18,13 +18,50 @@
             <li><a href="{{ url_for('search') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Поиск</button></a></li>
         </ul>
         <ul class="flex gap-5 mr-10">
-            <li><a href="{{ url_for('register') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Мой аккаунт</button></a></li>
-            <li><button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Выйти</button></a></li>
+        {% if user_info is none %}
+            <a href="{{ url_for('register') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Регистрация</button></a>
+        {% else %}
+            <li><a href="{{ url_for('account') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ user_info.name}} {{ user_info.name }}</button></a></li>
+            <li><button  id="logout_button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Выйти</button></a></li>
+            <script>
+                document.getElementById("logout_button").addEventListener("click", async () => {
+                    try {
+                        const response = await fetch('/auth/logout', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+            
+                        if (!response.ok) {
+                            window.location.href = '/';
+                        } else {
+
+                            const responseData = await response.json();
+                            // Проверяем, есть ли в ответе детали Unauthorized
+                            if (responseData && responseData.detail === "Unauthorized") {
+                                // Если есть, перенаправляем пользователя на главную страницу
+                                window.location.href = '/';
+                            } else {
+                                // Если нет, оставляем пользователя на текущей странице или перенаправляем куда-то еще
+                                // В данном примере, предполагаем, что перенаправляем на главную страницу
+                                window.location.href = '/';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Произошла ошибка:', error);
+                        // В случае ошибки также перенаправляем пользователя на главную страницу
+                        window.location.href = '/';
+                    }
+                });
+            </script>
+        {% endif %}
         </ul>
     </nav>
     <hr>
     <div id="content">
-        {% block content %}{% endblock %}
+    {% block content %}
+    {% endblock %}
     </div>
 </body>
 </html>

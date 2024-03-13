@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="userId" data-variable="{{ user_info.id }}"></div>
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-4">Личный кабинет</h1>
+    <div class="max-w-md mx-auto bg-white rounded-lg overflow-hidden shadow-md">
+        <div class="p-4">
+            <!-- Аватар пользователя -->
+            <div class="mb-4 flex items-center">
+                <div class="w-12 h-12 overflow-hidden rounded-full mr-4">
+                    <!-- Добавьте ссылку или путь к изображению аватара в атрибут src -->
+                    <img width="150" src="{{ url_for('static', path='avatar.jpg') }}" alt="Аватар" class="mr-5">
+                </div>
+                <div>
+                    <!-- Имя и фамилия пользователя -->
+                    <h2 class="text-lg font-semibold">{{user_info.name}} {{user_info.surname}}</h2>
+                    <!-- Email пользователя -->
+                    <p class="text-gray-600">{{user_info.email}}</p>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label for="friends" class="block text-gray-700 font-semibold mb-2">Ваши подписки:</label>
+                <div id="friends_container" class="bg-gray-200 p-2 rounded-md">
+                </div>
+            </div>
+            <script>
+                const userId = document.getElementById('userId').getAttribute('data-variable');
+                const createFriendElement = (friend) => {
+                    const friendElement = document.createElement("div");
+                    friendElement.classList.add("flex", "items-center", "justify-between", "mb-2");
+                
+                    const friendInfoElement = document.createElement("div");
+                    friendInfoElement.innerHTML = `
+                        <p class="text-gray-800">${friend.name} ${friend.surname}</p>
+                    `;
+                    
+                    const unsubscribeButton = document.createElement("button");
+                    unsubscribeButton.classList.add("px-4", "py-2", "bg-red-500", "text-white", "rounded-md");
+                    unsubscribeButton.textContent = "Отписаться";
+                
+                    unsubscribeButton.addEventListener("click", () => {
+                        try {
+                            const response = fetch(`sub/unsub/${userId}/${friend.id}`)
+                            console.log(response)
+                            loadFriendsList(userId);
+                            console.log("Вы отписались от пользователя с id:", friend.id);
+                        } catch {
+                            console.log("Проблема с отпиской от пользователя с id:", friend.id);
+                        }
+                        console.log(`Отписка от пользователя ${friend.id}`);
+                    });
+                    const chatButton = document.createElement("button");
+                    chatButton.classList.add("px-4", "py-2", "bg-blue-500", "text-white", "rounded-md");
+                    chatButton.textContent = "Написать";
+                
+                    chatButton.addEventListener("click", () => {
+                        window.location.href = `/chat/${friend.id}`;
+                    });
+                    friendElement.appendChild(unsubscribeButton);
+                    friendElement.appendChild(friendInfoElement);
+                    friendElement.appendChild(chatButton);
+                
+                    return friendElement;
+                };
+                const loadFriendsList = async (userId) => {
+                    try {
+                        const response = await fetch(`sub/get_sub_list/${userId}`);
+                        const friendsData = await response.json();
+            
+                        const friendsContainer = document.getElementById("friends_container");
+                        friendsContainer.innerHTML = "";
+            
+                        for (const friend of friendsData) {
+                            const currentUser = await getUser(friend.sub_id);
+                            const friendElement = createFriendElement(currentUser[0]);
+                            friendsContainer.appendChild(friendElement);
+                        }
+                    } catch (error) {
+                        console.error('Ошибка:', error);
+                    }
+                };
+                const getUser = async (userId) => {
+                    try {
+                        const response = await fetch(`user/get_current_user/${userId}`);
+                        const currentUser = await response.json();
+                        return currentUser;
+                    } catch(error) {
+                        console.error('Ошибка:', error);
+                    }
+                };
+                window.addEventListener("DOMContentLoaded", () => {
+                    const userId = document.getElementById('userId').getAttribute('data-variable');
+                    loadFriendsList(userId);
+                });
+            </script>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -35,4 +35,4 @@ class User(SQLAlchemyBaseUserTable[int], Base):
     is_verified: bool = Column(Boolean, default=False, nullable=False)
     
     class Config:
-        orm_mode = True
+        from_attributes = True

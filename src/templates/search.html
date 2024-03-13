@@ -4,39 +4,76 @@
 {% endblock %}
 
 {% block content %}
+<div id="userId" data-variable="{{ user_info.id }}"></div>
 <div class="flex justify-center flex-col items-center">
     <div class="flex my-3 gap-5">
         <input id="user_search" type="text" placeholder="Поиск" class="text-xl">
         <button id="search_button" class="border-2 rounded-3xl bg-gray-300 p-3">Поиск по юзерам</button>
     </div>
-    <div id="users_container"></div>
+    <div id="users_container" style="display: flex"></div>
 
     <script>
+        const userId = document.getElementById('userId').getAttribute('data-variable');
         const createUserElement = (user) => {
             const userElement = document.createElement("div");
             userElement.classList.add("flex", "rounded-3", "border-2", "p-3", "mt-5");
+            userElement.style.margin = "10px"
             userElement.innerHTML = `
-                <div class="flex justify-center flex-col items-center">
-                    <span class="text-2xl font-bold">${user.name}</span>
-                    <span class="text-lg">${user.surname}</span>
-                    <span class="text-lg">${user.email}</span>
+                <div class=" justify-center items-center">
+                    <img width="150" src="{{ url_for('static', path='avatar.jpg') }}" alt="Аватар" class="mr-5">
+                    <div class="flex flex-col items-start">
+                        <span class="text-2xl font-bold">${user.id} ${user.name}</span>
+                        <span class="text-lg">${user.surname}</span>
+                        <span class="text-lg">${user.email}</span>
+                    </div>
+                    <button class="ml-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded self-end" onclick="subscribeToUser(${user.id})">Подписаться</button>
                 </div>
             `;
             return userElement;
         };
-
+        
+        const addSubscription = async (currentUserId) => {
+            try {
+                await fetch(`/sub/add_sub/${userId}/${currentUserId}`, { method: 'POST' });
+                alert('Вы успешно подписались на пользователя!');
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при подписке на пользователя.');
+            }
+        };
+        const checkSubscription = async (currentUserId) => {
+            try {
+                const response = await fetch(`/sub/check_subscription/${userId}/${currentUserId}`);
+                const data = await response.json();
+                console.log()
+                if (data.is_subscribed) {
+                    alert('Вы уже подписаны на этого пользователя!');
+                } else {
+                    addSubscription(currentUserId);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при проверке подписки.');
+            }
+        };
+        
+        const subscribeToUser = (currentUserId) => {
+            checkSubscription(currentUserId);
+        };
+        
+        // Вызываем функцию subscribeToUser с соответствующими идентификаторами пользователей
         const searchForUser = async () => {
             const searchInputValue = document.getElementById("user_search").value;
             const usersContainer = document.getElementById("users_container");
+
 
             // Очистка контейнера с пользователями перед новым поиском
             usersContainer.innerHTML = "";
 
             try {
                 // AJAX запрос на сервер
-                const response = await fetch(`/user/get-all?data=${encodeURIComponent(searchInputValue)}`);
+                const response = await fetch(`/user/get-all?data=${encodeURIComponent(searchInputValue)}&current_user_id=${encodeURIComponent(userId)}`);
                 const user_data = await response.json();
-                console.log(user_data)
                 user_data.forEach(user => {
                     const userElement = createUserElement(user);
                     usersContainer.appendChild(userElement);
