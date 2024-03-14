@@ -14,7 +14,7 @@ message = Table(
     Column("id", Integer, primary_key=True),
     Column("message", String, nullable=False),
     Column("sender_id",Integer, ForeignKey("user.id")),
-    Column("reciepien_id", Integer, ForeignKey("user.id")),
+    Column("reciepient_id", Integer, ForeignKey("user.id")),
     Column("timestamp", TIMESTAMP)
 )
 

@@ -17,6 +17,5 @@ templates = Jinja2Templates(directory="src/templates")
 @router.post("/receive_message/{sender}/{recipient}")
 async def receive_message(sender: int, recipient: int, body: dict = Body(...)):
     message = body.get("message")
-    if message: 
-        print(message)
+    
     print(f"Received message from {sender} to {recipient}, {message}")

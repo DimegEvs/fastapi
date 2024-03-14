@@ -24,9 +24,9 @@
 </div>
 
 <script>
-    const form = document.querySelector('#registorForm');
+    const form = document.querySelector('#loginForm');
     form.addEventListener('submit', async (event) => {
-        //event.preventDefault();
+        event.preventDefault();
 
         const formData = {
             username: form.querySelector('#username').value,
@@ -34,21 +34,25 @@
         };
 
         try {
-            const response = await fetch('/auth/login', {
+            const loginFormData = new URLSearchParams();
+            loginFormData.append('username', formData.username);
+            loginFormData.append('password', formData.password);
+            const loginResponse = await fetch('/auth/login', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: JSON.stringify(formData),
+                body: loginFormData,
             });
 
-            if (!response.ok) {
-                throw new Error('Login failed.');
+        
+            if (!loginResponse.ok) {
+                throw new Error('Ошибка при входе пользователя.');
+            } else {
+                // Пользователь успешно вошел
+                window.location.href = '/account';
+                // Дополнительные действия при успешном входе
             }
-            else{
-                window.location.href = "/";
-            }
-            // Обработка успешного ответа
         } catch (error) {
             console.error('Error during registration:', error.message);
             // Обработка ошибки

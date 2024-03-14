@@ -1,44 +1,43 @@
 {% extends "base.html" %}
 {% block content %}
     <div id="senderId" data-variable="{{ user_info.id }}"></div>
-<form id='message-form'>
-<div class="bg-white p-6 rounded shadow-md w-full ">
-    <div class="mb-4">
-      <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Получатель:</label>
-      <input type="text" id="username" name="username" class="w-full border rounded py-2 px-3" placeholder="Имя пользователя">
-    </div>
+    <form id='message-form'>
+      <div class="bg-white p-6 rounded shadow-md w-full h-screen flex flex-col">
+          <div class="mb-4">
+              <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Получатель:</label>
+              <input type="text" id="username" name="username" class="w-full border rounded py-2 px-3" placeholder="Имя пользователя">
+          </div>
 
-    <div class="bg-gray-200 p-10 h-48 overflow-y-auto rounded mb-4">
-      <div class="mb-2">
-        <strong>Отправитель:</strong> Сообщение
+          <div id="messages" class="bg-gray-200 p-10 overflow-y-auto rounded mb-4 flex-1">
+              <!-- Здесь будут отображаться сообщения -->
+          </div>
+
+          <div class="flex">
+              <input type="text" id="message-input" name="message-input" class="flex-1 border rounded-l py-2 px-3" placeholder="Введите ваше сообщение">
+              <button class="bg-blue-500 text-white py-2 px-4 rounded-r">Отправить</button>
+          </div>
       </div>
-      
-    </div>
-
-    <div class="flex">
-      <input type="text" id="message-input" name="message-input" class="flex-1 border rounded-l py-2 px-3" placeholder="Введите ваше сообщение">
-      <button class="bg-blue-500 text-white py-2 px-4 rounded-r">Отправить</button>
-    </div>
-  </div>
-</form>
+  </form>
   <script>
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
+    const messagesContainer = document.getElementById('messages');
     var senderId = document.getElementById('senderId').getAttribute('data-variable');
     
-    const recipientId = 2; // Идентификатор получателя (например, из URL-параметра)
-
+    const currentUrl = window.location.href;
+    const recipientId = currentUrl.split('/').pop();
     const socket = new WebSocket(`ws://127.0.0.1:8001/ws/${senderId}/${recipientId}`);
 
     socket.onopen = () => {
         console.log('WebSocket connection established');
     };
-
     socket.onmessage = (event) => {
-        // Здесь вы можете обработать входящие сообщения
-        const message = JSON.parse(event.data);
-        console.log(`Received message from ${message.sender}: ${message.message}`);
-    };
+      // Здесь обработка входящих сообщений
+      const message = JSON.parse(event.data);
+      const messageElement = document.createElement('div');
+      messageElement.textContent = `От ${message.sender_id}: ${message.message}`;
+      messagesContainer.appendChild(messageElement);
+  };
 
     messageForm.addEventListener('submit', (event) => {
         event.preventDefault();
