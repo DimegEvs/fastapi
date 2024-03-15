@@ -1,43 +1,114 @@
 {% extends "base.html" %}
 {% block content %}
     <div id="senderId" data-variable="{{ user_info.id }}"></div>
+    <div id="senderName" data-variable="{{ user_info.name }}"></div>
+    <div id="senderSurname" data-variable="{{ user_info.surname }}"></div>
     <form id='message-form'>
       <div class="bg-white p-6 rounded shadow-md w-full h-screen flex flex-col">
-          <div class="mb-4">
-              <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Получатель:</label>
-              <input type="text" id="username" name="username" class="w-full border rounded py-2 px-3" placeholder="Имя пользователя">
+          <div class="mb-4 recipient-label">
+              <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Получатель: </label>
           </div>
 
-          <div id="messages" class="bg-gray-200 p-10 overflow-y-auto rounded mb-4 flex-1">
-              <!-- Здесь будут отображаться сообщения -->
-          </div>
-
+          <div id="messages" class="bg-gray-200 p-10 mb-4 flex-1" style="max-height: calc(100vh - 200px); overflow-y: auto;">
+            <!-- Здесь будут отображаться сообщения -->
+            </div>
           <div class="flex">
               <input type="text" id="message-input" name="message-input" class="flex-1 border rounded-l py-2 px-3" placeholder="Введите ваше сообщение">
               <button class="bg-blue-500 text-white py-2 px-4 rounded-r">Отправить</button>
           </div>
       </div>
   </form>
+  <style>
+    .message-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end; /* Выравнивание по правому краю */
+      margin-bottom: 8px;
+  }
+  
+  .message {
+      @apply p-2 rounded-md shadow-md text-justify;
+      max-width: 50%; /* Максимальная ширина сообщения - половина формы */
+      word-wrap: break-word;/* Перенос слов */
+  }
+  
+  .own-message {
+      @apply bg-blue-500 text-white;
+  }
+  
+  .other-message {
+      @apply bg-gray-200 text-gray-800;
+      align-self: flex-start; 
+  }
+
+  .message-recipient {
+      @apply bg-gray-200 text-gray-800;
+      align-self: flex-start; 
+  }
+  body {
+    overflow: hidden;
+    }   
+
+  </style>
   <script>
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
     const messagesContainer = document.getElementById('messages');
     var senderId = document.getElementById('senderId').getAttribute('data-variable');
+    var senderName = document.getElementById('senderName').getAttribute('data-variable');
+    var senderSurname = document.getElementById('senderSurname').getAttribute('data-variable');
     
     const currentUrl = window.location.href;
     const recipientId = currentUrl.split('/').pop();
     const socket = new WebSocket(`ws://127.0.0.1:8001/ws/${senderId}/${recipientId}`);
 
-    socket.onopen = () => {
-        console.log('WebSocket connection established');
-    };
-    socket.onmessage = (event) => {
-      // Здесь обработка входящих сообщений
-      const message = JSON.parse(event.data);
-      const messageElement = document.createElement('div');
-      messageElement.textContent = `От ${message.sender_id}: ${message.message}`;
-      messagesContainer.appendChild(messageElement);
+    async function getCurrentUser() {
+      try {
+          const response = await fetch(`/user/get_current_user/${recipientId}`);
+          if (!response.ok) {
+              throw new Error('Ошибка при получении информации о текущем пользователе');
+          }
+          const userData = await response.json();
+          return userData[0];
+      } catch (error) {
+          console.error('Произошла ошибка:', error);
+      }
+  }
+  
+  socket.onopen = () => {
+    console.log('WebSocket connection established');
   };
+  getCurrentUser().then(user => {
+    const recipientLabel = document.querySelector('.recipient-label');
+    recipientLabel.textContent = `Получатель: ${user.name} ${user.surname}`;
+  });
+
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        message = data.message
+        console.log(data)
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add('message-container');
+        const messageElement = document.createElement('div');
+        messageElement.textContent = message.message;
+        const isOwnMessage = message.sender_id == senderId;
+        const senderElement = document.createElement('div');
+        const recipientElement = document.createElement('div');
+        recipientElement.classList.add('message-recipient')
+        senderElement.classList.add('message-sender');
+        messageElement.classList.add('message', 'p-2', 'rounded-md', 'shadow-md', 'text-left', 'break-words');
+        if (isOwnMessage) {
+            senderElement.textContent = data.sender_name
+            messageElement.classList.add('own-message');
+        } else {
+            recipientElement.textContent =data.sender_name
+            messageElement.classList.add('other-message');
+        }
+        messageContainer.appendChild(senderElement);
+        messageContainer.appendChild(recipientElement);
+        messageContainer.appendChild(messageElement);
+        messagesContainer.appendChild(messageContainer);
+    };
 
     messageForm.addEventListener('submit', (event) => {
         event.preventDefault();

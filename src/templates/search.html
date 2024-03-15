@@ -16,35 +16,39 @@
     <script>
         const userId = document.getElementById('userId').getAttribute('data-variable');
         const createUserElement = (user) => {
-            // const check_sub = checkSubscription(user.id)
-            console.log(user)
             const userElement = document.createElement("div");
             userElement.classList.add("flex", "rounded-3", "border-2", "p-3", "mt-5");
-            userElement.style.width = "20%";
-            userElement.style.margin = "10px"
-            div = document.createElement('div')
-            div.classList.add("justify-center", "items-center")
-            div.innerHTML = `
-                    <img width="150" src="{{ url_for('static', path='avatar.jpg') }}" alt="Аватар" class="mr-5">
-                    <div class="flex flex-col items-start">
-                        <span class="text-2xl font-bold">${user.id} ${user.name}</span>
-                        <span class="text-lg">${user.surname}</span>
-                        <span class="text-lg">${user.email}</span>
-                    </div>`
-            button = document.createElement('button')
-            button.classList.add('ml-auto', 'bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded', 'self-end')
+            userElement.style.width = "100%"; 
+            userElement.style.margin = "10px 0";
+        
+            const avatarDiv = document.createElement('div');
+            avatarDiv.innerHTML = `<img width="150" src="{{ url_for('static', path='avatar.jpg') }}" alt="Аватар" class="mr-5">`;
+            userElement.appendChild(avatarDiv);
+        
+            const userInfoDiv = document.createElement('div');
+            userInfoDiv.classList.add("flex", "flex-col", "items-start");
+            userInfoDiv.innerHTML = `
+                <span class="text-2xl font-bold">${user.id} ${user.name}</span>
+                <span class="text-lg">${user.surname}</span>
+                <span class="text-lg">${user.email}</span>
+            `;
+            userElement.appendChild(userInfoDiv);
+        
+            const button = document.createElement('button');
+            button.classList.add('ml-auto', 'bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded', 'self-end');
             if (!user.is_subscribed) {
                 button.onclick = (event) => {
-                    subscribeToUser(user.id)
-                }
-                button.textContent = "Подписаться ✅"
+                    subscribeToUser(user.id);
+                };
+                button.textContent = "Подписаться ✅";
             } else {
-                button.textContent = "В подписках"
+                button.textContent = "В подписках";
             }
-            div.appendChild(button)
-            userElement.appendChild(div)
+            userElement.appendChild(button);
+        
             return userElement;
         };
+        
         
         const addSubscription = async (currentUserId) => {
             try {
