@@ -13,18 +13,21 @@ message = Table(
     metadata,
     Column("id", Integer, primary_key=True),
     Column("message", String, nullable=False),
-    Column("sender_id",Integer, ForeignKey("user.id")),
+    Column("sender_id", Integer, ForeignKey("user.id")),
     Column("recipient_id", Integer, ForeignKey("user.id")),
-    Column("timestamp", TIMESTAMP)
+    Column("timestamp", TIMESTAMP),
+    Column("is_read", Boolean, default=False)
 )
 
 
 class Message(Base):
     __tablename__ = "message"
     id = Column(Integer, primary_key=True)
-    message = Column(String, nullable= False)
+    message = Column(String, nullable=False)
     sender_id = Column(Integer, ForeignKey("user.id"))
     recipient_id = Column(Integer, ForeignKey("user.id"))
     timestamp = Column(DateTime, default=func.now())
+    is_read = Column(Boolean, default=False)
+
     class Config:
         from_attributes = True

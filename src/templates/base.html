@@ -6,14 +6,50 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .notification-popup {
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem); /* Отступ от кнопки */
+            max-height: 15rem; /* Увеличение максимальной высоты */
+            overflow-y: auto;
+            width: 500px;
+        }
+        .notification-badge {
+            background-color: #dc2626;
+            color: #fff;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            position: absolute;
+            top: -0.5rem;
+            right: -0.5rem;
+            transform: translate(50%, -50%);
+        }
+        .notification {
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+        .notification:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
     {% block head %}{% endblock %}
     <title>App</title>
+    
 </head>
 <body align="center"    >
     <nav class="flex justify-between text-3xl my-3">
         <ul class="flex ml-10">
             <li><a href="{{ url_for('home') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Чатик</button></a></li>
         </ul>
+        
         <ul class="flex ml-10">
         {% if user_info is not none %}
             <li><a href="{{ url_for('search') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Поиск</button></a></li>
@@ -23,7 +59,112 @@
         {% if user_info is none %}
             <a href="{{ url_for('register') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Регистрация</button></a>
         {% else %}
+            <ul class="flex ml-10">
+                <div class="relative">
+                 <div id="userId" data-variable="{{ user_info.id }}"></div>
+                    <!-- Значок уведомлений -->
+                    <button id="notificationButton" class="relative">
+                        
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/>
+                        </svg>
+                        <!-- Бейдж с количеством уведомлений -->
+                        <span id="notificationBadge" class="notification-badge hidden"></span>
+                    </button>
+                    <!-- Попап уведомлений -->
+                    <div id="notificationPopup" class="notification-popup">
+                        <!-- Здесь будут отображаться уведомления -->
+                        <!-- Пример: <div class="notification">Новое уведомление</div> -->
+                    </div>
+                </div>
+            </ul>
+            <script>
+                var userInfoId = document.getElementById('userId').getAttribute('data-variable');
+                const socketNotifications = new WebSocket(`ws://127.0.0.1:8002/ws/${userInfoId}`);
+                // Код JavaScript для отображения уведомлений и обработки кликов на значке уведомлений
+                const notificationButton = document.getElementById('notificationButton');
+                const notificationPopup = document.getElementById('notificationPopup');
+                const notificationBadge = document.getElementById('notificationBadge');
+        
+                let notificationCount = 0;
+        
+                // Функция для отображения попапа с уведомлениями
+                function showNotifications() {
+                    notificationPopup.classList.toggle('hidden');
+                }
+                socketNotifications.onopen = () => {
+                    console.log('WebSocketNoti connection established');
+                  };
+
+                socketNotifications.onmessage = event => {
+                    const data = JSON.parse(event.data);
+                    console.log(data);
+                    addNotification(`Пользователь ${ data.sender_name} отправил вам сообщение`, data);
+                }
+                // Функция для обновления количества уведомлений и отображения бейджа
+                function updateNotificationBadge() {
+                    if (notificationCount > 0) {
+                        notificationBadge.classList.remove('hidden');
+                        notificationBadge.textContent = notificationCount;
+                    } else {
+                        notificationBadge.classList.add('hidden');
+                    }
+                }
+        
+                // Событие клика на значке уведомлений
+                notificationButton.addEventListener('click', function () {
+                    showNotifications();
+                    // После открытия попапа, сбрасываем счетчик уведомлений
+                    updateNotificationBadge();
+                });
+        
+                // Пример добавления нового уведомления
+                function addNotification(message, data) {
+                    notificationCount++;
+                    updateNotificationBadge();
+                
+                    // Создаем элемент уведомления
+                    const notificationElement = document.createElement('div');
+                    notificationElement.classList.add('notification');
+                    const buttonElement = document.createElement('button');
+                    buttonElement.textContent = message;
+                    buttonElement.addEventListener('click', function() {
+                        window.location.href = `/chat/${data.message.sender_id}`;
+                    });
+                    notificationElement.appendChild(buttonElement);
+                    
+                    // Добавляем уведомление в попап
+                    notificationPopup.appendChild(notificationElement);
+                
+                    // Обновляем отображение попапа
+                    notificationPopup.scrollTop = notificationPopup.scrollHeight; // Прокручиваем вниз, чтобы показать новое уведомление
+                }
+        
+                
+                // Скрываем окно с уведомлениями при загрузке страницы
+                notificationPopup.classList.add('hidden');
+
+                socketNotifications.onclose = () => {
+                    console.log('WebSocketNoti connection closed')
+                }
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Добавляем начальное состояние в историю браузера
+                    history.pushState({ page: 'initial' }, '', document.location.href);
+                
+                    // Слушаем событие popstate
+                    window.addEventListener('popstate', function(event) {
+                        // Перезагружаем страницу только если есть состояние в истории
+                        if (event.state) {
+                            // Перезагрузить страницу
+                            location.reload();
+                        }
+                    });
+                });
+                
+            </script>
             <li><a href="{{ url_for('account') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ user_info.name}} {{ user_info.surname }}</button></a></li>
+            
             <li><button  id="logout_button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Выйти</button></a></li>
             <script>
                 document.getElementById("logout_button").addEventListener("click", async () => {
@@ -66,4 +207,5 @@
     {% endblock %}
     </div>
 </body>
+
 </html>

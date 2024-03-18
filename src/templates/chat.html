@@ -76,7 +76,8 @@
   }
   
   socket.onopen = () => {
-    console.log('WebSocket connection established');
+    console.log('WebSocketChat connection established');
+    
   };
   getCurrentUser().then(user => {
     const recipientLabel = document.querySelector('.recipient-label');
@@ -85,7 +86,7 @@
 
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        message = data.message
+        let message = data.message
         console.log(data)
         const messageContainer = document.createElement('div');
         messageContainer.classList.add('message-container');
@@ -97,17 +98,31 @@
         recipientElement.classList.add('message-recipient')
         senderElement.classList.add('message-sender');
         messageElement.classList.add('message', 'p-2', 'rounded-md', 'shadow-md', 'text-left', 'break-words');
+        const timeElement = document.createElement('div');
+        const timestamp = new Date(message.timestamp);
+        const date = timestamp.toLocaleDateString('ru-RU');
+        const hours = timestamp.getHours();
+        const minutes = timestamp.getMinutes();
+        const time = `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+        timeElement.textContent = `${date} ${time}`;
+        timeElement.style.fontSize = '0.8rem';
+        timeElement.style.color = '#6B7280';
+        timeElement.style.marginTop = '0.2rem';
         if (isOwnMessage) {
+            timeElement.classList.add("message-sender");
             senderElement.textContent = data.sender_name
             messageElement.classList.add('own-message');
         } else {
+            timeElement.classList.add("message-recipient");
             recipientElement.textContent =data.sender_name
             messageElement.classList.add('other-message');
         }
+        messageContainer.appendChild(timeElement);
         messageContainer.appendChild(senderElement);
         messageContainer.appendChild(recipientElement);
         messageContainer.appendChild(messageElement);
         messagesContainer.appendChild(messageContainer);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     };
 
     messageForm.addEventListener('submit', (event) => {
@@ -115,6 +130,26 @@
         const message = messageInput.value;
         socket.send(JSON.stringify({ message }));
         messageInput.value = '';
+    });
+    socketNotifications.onclose = () => {
+      console.log('WebSocketChat connection closed')
+    }
+    window.addEventListener('beforeunload', function() {
+      socket.close();
+      });
+      document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем, была ли страница уже обновлена
+        if (!localStorage.getItem('pageRefreshed')) {
+          // Если страница не была обновлена, обновляем ее
+          localStorage.setItem('pageRefreshed', 'true');
+          location.reload();
+        } else {
+          // Если страница уже была обновлена, очищаем флаг
+          localStorage.removeItem('pageRefreshed');
+        }
+      });
+    document.getElementById('account-btn').addEventListener('click', function() {
+      window.location.href = '/account';
     });
   </script>
 {% endblock %}
