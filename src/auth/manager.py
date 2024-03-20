@@ -17,7 +17,12 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     verification_token_secret = SECRET_AUTH
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
-        print(f"User {user.id} has registered.")
+        params = {
+            "type": "INFO",
+            "message": f"User ID: {user.id} EMAIL: {user.email} NAME: {user.name} SURNAME: {user.surname} registered."
+        }
+        async with httpx.AsyncClient() as client:
+            await client.get(URL_LOGGER, params=params)
 
     async def create(
             self,
@@ -43,6 +48,20 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         await self.on_after_register(created_user, request)
 
         return created_user
+
+    async def on_after_login(
+            self,
+            user: models.UP,
+            request: Optional[Request] = None,
+            response: Optional[Response] = None,
+    ) -> None:
+        params = {
+            "type": "INFO",
+            "message": f"User ID: {user.id} EMAIL: {user.email} NAME: {user.name} SURNAME: {user.surname} has logged in."
+        }
+        async with httpx.AsyncClient() as client:
+            await client.get(URL_LOGGER, params=params)
+        return  # pragma: no cover
 
 
 async def get_user_manager(user_db=Depends(get_user_db)):
