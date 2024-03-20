@@ -47,7 +47,7 @@
 <body align="center"    >
     <nav class="flex justify-between text-3xl my-3">
         <ul class="flex ml-10">
-            <li><a href="{{ url_for('home') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Чатик</button></a></li>
+            <li><a href="{{ url_for('home') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">MyChat</button></a></li>
         </ul>
         
         <ul class="flex ml-10">
@@ -59,12 +59,16 @@
         {% if user_info is none %}
             <a href="{{ url_for('register') }}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Регистрация</button></a>
         {% else %}
+            <div id="currentUserInfoId" data-variable='{{ user_info.id }}'></div>
+            <div id="currentUserInfoEmail" data-variable='{{ user_info.email }}'></div>
+            <div id="currentUserInfoName" data-variable='{{ user_info.name }}'></div>
+            <div id="currentUserInfoSurname" data-variable='{{ user_info.surname }}'></div>
             <ul class="flex ml-10">
                 <div class="relative">
                  <div id="userId" data-variable="{{ user_info.id }}"></div>
                     <!-- Значок уведомлений -->
                     <button id="notificationButton" class="relative">
-                        
+
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/>
@@ -100,7 +104,7 @@
                 socketNotifications.onmessage = event => {
                     const data = JSON.parse(event.data);
                     console.log(data);
-                    addNotification(`Пользователь ${ data.sender_name} отправил вам сообщение`, data);
+                    addNotification(`Пользователь ${data.sender_name} отправил вам сообщение`, data);
                 }
                 // Функция для обновления количества уведомлений и отображения бейджа
                 function updateNotificationBadge() {
@@ -168,33 +172,36 @@
             <li><button  id="logout_button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Выйти</button></a></li>
             <script>
                 document.getElementById("logout_button").addEventListener("click", async () => {
+                    var userInfoId = document.getElementById('currentUserInfoId').getAttribute('data-variable');
+                    var userInfoEmail = document.getElementById('currentUserInfoEmail').getAttribute('data-variable');
+                    var userInfoName = document.getElementById('currentUserInfoName').getAttribute('data-variable');
+                    var userInfoSurname = document.getElementById('currentUserInfoSurname').getAttribute('data-variable');
+                    console.log(`User ID: ${userInfoId} EMAIL: ${userInfoEmail} NAME: ${userInfoName} SURNAME: ${userInfoSurname} has logged out.`)
                     try {
-                        const response = await fetch('/auth/logout', {
+                         const loggerResponse = await fetch('http://localhost:8003/logger_frontend', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
-                            }
+                            },
+                            body: JSON.stringify({
+                                type: "INFO",
+                                message: `User ID: ${userInfoId} EMAIL: ${userInfoEmail} NAME: ${userInfoName} SURNAME: ${userInfoSurname} has logged out.`
+                            })
                         });
-            
-                        if (!response.ok) {
+                         const response = await fetch('/auth/logout', {
+                             method: 'POST',
+                             headers: {
+                                 'Content-Type': 'application/json'
+                             }
+                         });
+                        if (response.ok) {
                             window.location.href = '/';
                         } else {
-
-                            const responseData = await response.json();
-                            // Проверяем, есть ли в ответе детали Unauthorized
-                            if (responseData && responseData.detail === "Unauthorized") {
-                                // Если есть, перенаправляем пользователя на главную страницу
-                                window.location.href = '/';
-                            } else {
-                                // Если нет, оставляем пользователя на текущей странице или перенаправляем куда-то еще
-                                // В данном примере, предполагаем, что перенаправляем на главную страницу
-                                window.location.href = '/';
-                            }
+                            alert("Ошибка при выходе, обновите страницу")
                         }
                     } catch (error) {
                         console.error('Произошла ошибка:', error);
-                        // В случае ошибки также перенаправляем пользователя на главную страницу
-                        window.location.href = '/';
+                        {#window.location.href = '/';#}
                     }
                 });
             </script>
