@@ -19,7 +19,8 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         params = {
             "type": "INFO",
-            "message": f"User ID: {user.id} EMAIL: {user.email} NAME: {user.name} SURNAME: {user.surname} registered."
+            "user_id": user.id,
+            "message": f"User ID: {user.id} EMAIL: {user.email} NAME: {user.name} SURNAME: {user.surname} IP: {request.client.host} registered."
         }
         async with httpx.AsyncClient() as client:
             await client.get(URL_LOGGER, params=params)
@@ -57,7 +58,8 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     ) -> None:
         params = {
             "type": "INFO",
-            "message": f"User ID: {user.id} EMAIL: {user.email} NAME: {user.name} SURNAME: {user.surname} has logged in."
+            "user_id": user.id,
+            "message": f"User ID: {user.id} EMAIL: {user.email} NAME: {user.name} SURNAME: {user.surname} IP: {request.client.host} has logged in."
         }
         async with httpx.AsyncClient() as client:
             await client.get(URL_LOGGER, params=params)

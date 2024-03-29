@@ -43,6 +43,7 @@ async def add_sub(user_id: int, sub_id: int, session: AsyncSession = Depends(get
         await session.commit()
         params = {
             "type": "INFO",
+            "user_id": user_id,
             "message": f"User ID: {user_id} subscribed on sub ID: {sub_id}"
         }
         async with httpx.AsyncClient() as client:
@@ -50,6 +51,7 @@ async def add_sub(user_id: int, sub_id: int, session: AsyncSession = Depends(get
     except Exception as e:
         params = {
             "type": "ERROR",
+            "user_id": user_id,
             "message": f"User ID: {user_id} not sub on sub ID: {sub_id}, error"
         }
         async with httpx.AsyncClient() as client:
@@ -73,6 +75,7 @@ async def delete_sub(sub_id: int, user_id: int, session: AsyncSession = Depends(
         await session.commit()
         params = {
             "type": "INFO",
+            "user_id": user_id,
             "message": f"User ID: {user_id} unsubscribed on sub ID: {sub_id}"
         }
         async with httpx.AsyncClient() as client:

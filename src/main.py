@@ -9,7 +9,6 @@ from src.pages.router import router as router_pages
 from src.auth.schemas import UserRead, UserCreate
 from src.user.router import router as router_user
 from src.auth.base_config import current_user
-from src.messages.router import router as router_message
 from src.sub.router import router as router_sub
 
 app = FastAPI(
@@ -34,5 +33,4 @@ app.include_router(
 
 app.include_router(router_pages)
 app.include_router(router_user)
-app.include_router(router_message)
 app.include_router(router_sub)
