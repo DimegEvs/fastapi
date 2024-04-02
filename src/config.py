@@ -14,4 +14,5 @@ DB_PASS=os.environ.get("DB_PASS")
 
 SECRET_AUTH="e95a3684b9982fcfd46eea716707f80cef515906eb49c4cb961dfde39a41ce21"
 
-URL_LOGGER = "http://127.0.0.1:8003/logger"
+URL_LOGGER = "http://fastapi-logging:8003/logger"
+URL_MIDDLEWARE = "http://fastapi-logging:8003/logger_middleware"

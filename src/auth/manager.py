@@ -23,7 +23,10 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
             "message": f"User ID: {user.id} EMAIL: {user.email} NAME: {user.name} SURNAME: {user.surname} IP: {request.client.host} registered."
         }
         async with httpx.AsyncClient() as client:
-            await client.get(URL_LOGGER, params=params)
+            try:
+                await client.get(URL_LOGGER, params=params)
+            except httpx.HTTPError:
+                print("Error on_after_register")
 
     async def create(
             self,
@@ -62,7 +65,14 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
             "message": f"User ID: {user.id} EMAIL: {user.email} NAME: {user.name} SURNAME: {user.surname} IP: {request.client.host} has logged in."
         }
         async with httpx.AsyncClient() as client:
-            await client.get(URL_LOGGER, params=params)
+            try:
+                response1 = await client.get(URL_LOGGER, params=params)
+                response1.raise_for_status()  # проверка статуса ответа
+                print(response1.text)
+            except httpx.HTTPError as e:
+                print(f"HTTP error occurred: {e}")
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
         return  # pragma: no cover
 
 
