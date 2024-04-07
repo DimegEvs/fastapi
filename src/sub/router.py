@@ -24,62 +24,77 @@ router = APIRouter(
 
 templates = Jinja2Templates(directory="src/templates")
 
+current_optional_user = fastapi_users.current_user(optional=True)
 
 @router.get("/get_sub_list/{user_id}")
-async def get_list_sub(user_id: int, request: Request, session: AsyncSession = Depends(get_async_session)):
-    query = select(sub.c.sub_id).where(sub.c.user_id == user_id)
-    result = await session.execute(query)
-    return result.mappings().all()
-
+async def get_list_sub(user_id: int, request: Request, session: AsyncSession = Depends(get_async_session),
+                       user: User = Depends(current_optional_user)):
+    if user.id == user_id:
+        query = select(sub.c.sub_id).where(sub.c.user_id == user_id)
+        result = await session.execute(query)
+        return result.mappings().all()
+    else:
+        raise HTTPException(status_code=500)
 
 @router.post("/add_sub/{user_id}/{sub_id}")
-async def add_sub(user_id: int, sub_id: int, session: AsyncSession = Depends(get_async_session)):
-    try:
-        stmt = insert(sub).values(
-            user_id=user_id,
-            sub_id=sub_id
-        )
-        result = await session.execute(stmt)
-        await session.commit()
-        params = {
-            "type": "INFO",
-            "user_id": user_id,
-            "message": f"User ID: {user_id} subscribed on sub ID: {sub_id}"
-        }
-        async with httpx.AsyncClient() as client:
-            await client.get(URL_LOGGER, params=params)
-    except Exception as e:
-        params = {
-            "type": "ERROR",
-            "user_id": user_id,
-            "message": f"User ID: {user_id} not sub on sub ID: {sub_id}, error"
-        }
-        async with httpx.AsyncClient() as client:
-            await client.get(URL_LOGGER, params=params)
-
+async def add_sub(user_id: int, sub_id: int, session: AsyncSession = Depends(get_async_session),
+                  user: User = Depends(current_optional_user)):
+    if user.id == user_id:
+        try:
+            stmt = insert(sub).values(
+                user_id=user_id,
+                sub_id=sub_id
+            )
+            result = await session.execute(stmt)
+            await session.commit()
+            params = {
+                "type": "INFO",
+                "user_id": user_id,
+                "message": f"User ID: {user_id} subscribed on sub ID: {sub_id}"
+            }
+            async with httpx.AsyncClient() as client:
+                await client.get(URL_LOGGER, params=params)
+        except Exception as e:
+            params = {
+                "type": "ERROR",
+                "user_id": user_id,
+                "message": f"User ID: {user_id} not sub on sub ID: {sub_id}, error"
+            }
+            async with httpx.AsyncClient() as client:
+                await client.get(URL_LOGGER, params=params)
+    else:
+        raise HTTPException(status_code=500)
 
 @router.get("/check_subscription/{user_id}/{sub_id}")
-async def check_subscription(sub_id: int, user_id: int, session: AsyncSession = Depends(get_async_session)):
-    query = select(sub).where(and_(sub.c.user_id == user_id, sub.c.sub_id == sub_id))
-    result = await session.execute(query)
-    return {
-        "is_subscribed": result.mappings().first() is not None
-    }
+async def check_subscription(sub_id: int, user_id: int, session: AsyncSession = Depends(get_async_session),
+                             user: User = Depends(current_optional_user)):
+    if user.id == user_id:
+        query = select(sub).where(and_(sub.c.user_id == user_id, sub.c.sub_id == sub_id))
+        result = await session.execute(query)
+        return {
+            "is_subscribed": result.mappings().first() is not None
+        }
+    else:
+        raise HTTPException(status_code=500)
 
 
 @router.get("/unsub/{user_id}/{sub_id}")
-async def delete_sub(sub_id: int, user_id: int, session: AsyncSession = Depends(get_async_session)):
-    try:
-        delete_stmt = delete(sub).where(and_(sub.c.user_id == user_id, sub.c.sub_id == sub_id))
-        result = await session.execute(delete_stmt)
-        await session.commit()
-        params = {
-            "type": "INFO",
-            "user_id": user_id,
-            "message": f"User ID: {user_id} unsubscribed on sub ID: {sub_id}"
-        }
-        async with httpx.AsyncClient() as client:
-            await client.get(URL_LOGGER, params=params)
-        return {"status_code": 200}
-    except Exception:
+async def delete_sub(sub_id: int, user_id: int, session: AsyncSession = Depends(get_async_session),
+                     user: User = Depends(current_optional_user)):
+    if user.id == user_id:
+        try:
+            delete_stmt = delete(sub).where(and_(sub.c.user_id == user_id, sub.c.sub_id == sub_id))
+            result = await session.execute(delete_stmt)
+            await session.commit()
+            params = {
+                "type": "INFO",
+                "user_id": user_id,
+                "message": f"User ID: {user_id} unsubscribed on sub ID: {sub_id}"
+            }
+            async with httpx.AsyncClient() as client:
+                await client.get(URL_LOGGER, params=params)
+            return {"status_code": 200}
+        except Exception:
+            raise HTTPException(status_code=500)
+    else:
         raise HTTPException(status_code=500)

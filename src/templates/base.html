@@ -8,6 +8,18 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' ws://127.0.0.1:8002 ws://127.0.0.1:8001 http://localhost:8003; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @keyframes bg-animation {
+            0% { background-position: 0 0; }
+            100% { background-position: 100% 0; }
+        }
+
+        .animated-bg {
+            background-image: linear-gradient(90deg, #ff0000, #0000ff);
+            background-size: 200% 100%;
+            animation: bg-animation 5s infinite alternate;
+        }
+
+
         .notification-popup {
             background-color: #fff;
             border: 1px solid #e5e7eb;
