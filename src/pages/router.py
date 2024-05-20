@@ -26,7 +26,7 @@ def get_base_page(request: Request, user: User = Depends(current_optional_user))
     home_url = request.url_for("home")
     search_url = request.url_for("search")
     account_url = request.url_for("account")
-    return templates.TemplateResponse("base.html", {"request": request,
+    return templates.TemplateResponse("index.html", {"request": request,
                                                     "home_url": home_url,
                                                     "register_url": register_url,
                                                     "search_url": search_url,
@@ -94,3 +94,17 @@ def get_chat_page(request: Request, user: User = Depends(current_optional_user))
         return error
     error = get_error_page(request=request, user=user_info, error_message="Ошибка: Не выбран чат с пользователем")
     return error
+
+@router.get("/personal-data")
+def get_chat_page(request: Request, user_id: Optional[int] = None, user: User = Depends(current_optional_user)):
+    user_info = None
+    if user:
+        user_info = user
+    return templates.TemplateResponse("personal.html", {"request": request, "user_info": user_info})
+
+@router.get("/policy")
+def get_chat_page(request: Request, user_id: Optional[int] = None, user: User = Depends(current_optional_user)):
+    user_info = None
+    if user:
+        user_info = user
+    return templates.TemplateResponse("policy.html", {"request": request, "user_info": user_info})

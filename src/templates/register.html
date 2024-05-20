@@ -20,6 +20,14 @@
                 <label for="password" class="block text-sm font-medium text-gray-700">Пароль:</label>
                 <input type="password" id="password" name="password" required class="mt-1 p-2 border border-gray-300 rounded-md w-full">
             </div>
+            <div class="mb-4">
+                <input type="checkbox" id="agreePolicy" name="agreePolicy" required class="mr-2">
+                <label for="agreePolicy" class="text-sm">Я согласен с <a href="/policy" class="text-blue-500 hover:underline">политикой соглашения</a></label>
+            </div>
+            <div class="mb-4">
+                <input type="checkbox" id="agreePersonalData" name="agreePersonalData" required class="mr-2">
+                <label for="agreePersonalData" class="text-sm">Я согласен на <a href="/personal-data" class="text-blue-500 hover:underline">обработку персональных данных</a></label>
+            </div>
             <div class="text-center">
                 <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">Регистрация</button>
             </div>
@@ -41,6 +49,14 @@
             email: form.querySelector('#email').value,
             password: form.querySelector('#password').value
         };
+
+        const agreePolicy = form.querySelector('#agreePolicy').checked;
+        const agreePersonalData = form.querySelector('#agreePersonalData').checked;
+
+        if (!agreePolicy || !agreePersonalData) {
+            alert('Вы должны согласиться с политикой соглашения и на обработку персональных данных.');
+            return;
+        }
 
         try {
             const response = await fetch('/auth/register', {
@@ -71,13 +87,10 @@
                     body: loginFormData,
                 });
 
-            
                 if (!loginResponse.ok) {
                     throw new Error('Ошибка при входе пользователя.');
                 } else {
-                    // Пользователь успешно вошел
                     window.location.href = '/account';
-                    // Дополнительные действия при успешном входе
                 }
             }
         } catch (error) {
