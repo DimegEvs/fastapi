@@ -3,7 +3,7 @@
 <div class="flex justify-center items-center h-screen">
     <div class="p-8 rounded shadow-md max-w-md w-full">
         <h2 class="text-2xl mb-4 text-center">Регистрация</h2>
-        <form id="registrationForm" action="/auth/register" method="post"> 
+        <form id="registrationForm" action="/auth/register" method="post">
             <div class="mb-4">
                 <label for="name" class="block text-sm font-medium text-gray-700">Имя:</label>
                 <input type="text" id="name" name="name" required class="mt-1 p-2 border border-gray-300 rounded-md w-full">
@@ -16,9 +16,20 @@
                 <label for="email" class="block text-sm font-medium text-gray-700">Email:</label>
                 <input type="email" id="email" name="email" required class="mt-1 p-2 border border-gray-300 rounded-md w-full">
             </div>
-            <div class="mb-4">
+            <div class="mb-4 relative">
                 <label for="password" class="block text-sm font-medium text-gray-700">Пароль:</label>
-                <input type="password" id="password" name="password" required class="mt-1 p-2 border border-gray-300 rounded-md w-full">
+                <div class="relative">
+                    <input type="password" id="password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Password" autocomplete="new-password">
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <button type="button" class="p-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" onclick="togglePasswordVisibility()">
+                            <svg xmlns="http://www.w3.org/2000/svg" id="eyeIcon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.6 17.6a8 8 0 10-12.8 0" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <p id="passwordHelp" class="text-xs text-red-500 hidden">Пароль должен содержать минимум 8 символов, 1 заглавную и 1 строчную букву.</p>
             </div>
             <div class="mb-4">
                 <input type="checkbox" id="agreePolicy" name="agreePolicy" required class="mr-2">
@@ -39,15 +50,40 @@
 </div>
 
 <script>
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        if (type === 'password') {
+            eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.6 17.6a8 8 0 10-12.8 0" />';
+        } else {
+            eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5c4.142 0 7.5 3.358 7.5 7.5s-3.358 7.5-7.5 7.5S4.5 16.142 4.5 12 7.858 4.5 12 4.5zM15 12a3 3 0 11-6 0 3 3 0 016 0zM4.5 12c0 1.163.35 2.243.94 3.13L3 18l1.5 1.5 2.44-2.44A7.457 7.457 0 0012 19.5c4.142 0 7.5-3.358 7.5-7.5S16.142 4.5 12 4.5 4.5 7.858 4.5 12z" />';
+        }
+    }
+
     const form = document.querySelector('#registrationForm');
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
+
+        const passwordInput = form.querySelector('#password');
+        const passwordHelp = document.getElementById('passwordHelp');
+        const password = passwordInput.value;
+
+        const passwordValid = password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password);
+
+        if (!passwordValid) {
+            passwordHelp.classList.remove('hidden');
+            return;
+        } else {
+            passwordHelp.classList.add('hidden');
+        }
 
         const formData = {
             name: form.querySelector('#name').value,
             surname: form.querySelector('#surname').value,
             email: form.querySelector('#email').value,
-            password: form.querySelector('#password').value
+            password: password
         };
 
         const agreePolicy = form.querySelector('#agreePolicy').checked;
