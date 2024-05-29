@@ -8,20 +8,22 @@ from sqlalchemy import (JSON, TIMESTAMP, Boolean, Column, DateTime, ForeignKey, 
 
 from src.database import Base, metadata
 
+# Определение таблицы sub с помощью SQLAlchemy
 sub = Table(
-    "sub",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("user_id", Integer, nullable= False),
-    Column("sub_id", Integer, nullable=False)
+    "sub",  # Имя таблицы в базе данных
+    metadata,  # Метаданные для таблицы
+    Column("id", Integer, primary_key=True),  # Уникальный идентификатор подписки
+    Column("user_id", Integer, nullable=False),  # Идентификатор пользователя
+    Column("sub_id", Integer, nullable=False)  # Идентификатор подписки
 )
 
 
+# Определение класса Sub, который наследует Base
 class Sub(Base):
-    __tablename__ = "sub"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, nullable=False)
-    sub_id = Column(Integer, nullable=False)
-    
+    __tablename__ = "sub"  # Имя таблицы в базе данных
+    id = Column(Integer, primary_key=True)  # Уникальный идентификатор подписки
+    user_id = Column(Integer, nullable=False)  # Идентификатор пользователя
+    sub_id = Column(Integer, nullable=False)  # Идентификатор подписки
+
     class Config:
-        from_attributes = True
+        from_attributes = True  # Настройка конфигурации, указывающая на использование атрибутов
